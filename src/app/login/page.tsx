@@ -6,13 +6,8 @@ import {
   School,
   Lock,
   User,
-  Shield,
-  UserCheck,
-  CreditCard,
-  UserPlus,
   ArrowRight,
   AlertCircle,
-  CheckCircle2,
 } from 'lucide-react';
 
 export default function LoginPage() {
@@ -43,33 +38,6 @@ export default function LoginPage() {
       router.refresh();
     } catch (err: any) {
       setError(err.message || 'An error occurred during sign in.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleQuickLogin = async (user: string, pass: string) => {
-    setUsername(user);
-    setPassword(pass);
-    setError('');
-    setLoading(true);
-
-    try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: user, password: pass }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || 'Failed to login.');
-      }
-
-      router.push('/dashboard');
-      router.refresh();
-    } catch (err: any) {
-      setError(err.message || 'Quick login failed.');
     } finally {
       setLoading(false);
     }
@@ -166,60 +134,11 @@ export default function LoginPage() {
             </form>
           </div>
 
-          {/* Quick Demo Logins Section */}
-          <div className="mt-8 pt-6 border-t border-slate-100">
-            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2.5">
-              Quick Role Demo Access (1-Click)
+          {/* Security & Access Notice */}
+          <div className="mt-8 pt-6 border-t border-slate-100 text-center">
+            <p className="text-[11px] text-slate-400">
+              Protected Academic Management Portal • Authorized Staff Only
             </p>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => handleQuickLogin('admin', 'admin123')}
-                className="p-2 rounded-lg border border-slate-200 hover:border-sky-400 hover:bg-sky-50 text-left transition-all group"
-              >
-                <div className="flex items-center gap-1.5 text-slate-800 group-hover:text-sky-700 font-bold text-[11px]">
-                  <Shield className="w-3.5 h-3.5 text-indigo-500" />
-                  <span>Admin</span>
-                </div>
-                <div className="text-[9px] text-slate-400">admin / admin123</div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleQuickLogin('teacher', 'teacher123')}
-                className="p-2 rounded-lg border border-slate-200 hover:border-emerald-400 hover:bg-emerald-50 text-left transition-all group"
-              >
-                <div className="flex items-center gap-1.5 text-slate-800 group-hover:text-emerald-700 font-bold text-[11px]">
-                  <UserCheck className="w-3.5 h-3.5 text-emerald-500" />
-                  <span>Teacher</span>
-                </div>
-                <div className="text-[9px] text-slate-400">teacher / teacher123</div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleQuickLogin('accountant', 'accountant123')}
-                className="p-2 rounded-lg border border-slate-200 hover:border-amber-400 hover:bg-amber-50 text-left transition-all group"
-              >
-                <div className="flex items-center gap-1.5 text-slate-800 group-hover:text-amber-700 font-bold text-[11px]">
-                  <CreditCard className="w-3.5 h-3.5 text-amber-500" />
-                  <span>Accountant</span>
-                </div>
-                <div className="text-[9px] text-slate-400">accountant / accountant123</div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleQuickLogin('receptionist', 'receptionist123')}
-                className="p-2 rounded-lg border border-slate-200 hover:border-purple-400 hover:bg-purple-50 text-left transition-all group"
-              >
-                <div className="flex items-center gap-1.5 text-slate-800 group-hover:text-purple-700 font-bold text-[11px]">
-                  <UserPlus className="w-3.5 h-3.5 text-purple-500" />
-                  <span>Receptionist</span>
-                </div>
-                <div className="text-[9px] text-slate-400">receptionist / receptionist123</div>
-              </button>
-            </div>
           </div>
         </div>
 

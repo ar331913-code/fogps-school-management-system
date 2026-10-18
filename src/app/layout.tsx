@@ -3,6 +3,7 @@ import "./globals.css";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import AppShell from "@/components/layout/AppShell";
+import VisitorTracker from "@/components/analytics/VisitorTracker";
 
 export const metadata: Metadata = {
   title: "Full of Grace Preparatory School Management System",
@@ -45,6 +46,7 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body>
+        <VisitorTracker />
         <AppShell
           user={user}
           activeYearName={activeYearName}

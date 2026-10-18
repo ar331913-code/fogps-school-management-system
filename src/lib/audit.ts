@@ -4,8 +4,8 @@ export interface AuditParams {
   userId?: string | null;
   userName?: string | null;
   userRole?: string | null;
-  action: 'CREATE' | 'UPDATE' | 'DELETE' | 'LOGIN' | 'LOGOUT' | 'EXPORT' | 'PRINT' | 'PAYMENT';
-  module: 'Students' | 'Classes' | 'Fees' | 'Results' | 'Attendance' | 'Settings' | 'Auth' | 'Documents';
+  action: 'CREATE' | 'UPDATE' | 'DELETE' | 'LOGIN' | 'LOGOUT' | 'EXPORT' | 'PRINT' | 'PAYMENT' | 'VISIT';
+  module: 'Students' | 'Classes' | 'Fees' | 'Results' | 'Attendance' | 'Settings' | 'Auth' | 'Documents' | 'WebsiteAccess' | 'Visitors';
   recordId?: string | null;
   details: string;
 }
