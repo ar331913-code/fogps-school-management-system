@@ -3,7 +3,7 @@
 > A complete, professional, and secure School Management & Academic Information System built for **Full of Grace Preparatory School**.
 
 ### 🌐 Live Demo Website:
-👉 **[https://06fd8efe511c86bd-154-162-7-128.serveousercontent.com](https://06fd8efe511c86bd-154-162-7-128.serveousercontent.com)**
+👉 **[https://waves-telling-costa-apr.trycloudflare.com](https://waves-telling-costa-apr.trycloudflare.com)**
 
 *(Alternative GitHub Pages landing link: [https://ar331913-code.github.io/fogps-school-management-system/](https://ar331913-code.github.io/fogps-school-management-system/))*
 
