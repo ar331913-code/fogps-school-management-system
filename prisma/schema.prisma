@@ -1,0 +1,346 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id           String   @id @default(uuid())
+  username     String   @unique
+  email        String?  @unique
+  passwordHash String
+  fullName     String
+  phone        String?
+  role         String   @default("TEACHER") // ADMIN, TEACHER, ACCOUNTANT, RECEPTIONIST
+  isActive     Boolean  @default(true)
+  teacherClassId String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  assignedClass Class?   @relation("ClassTeacher", fields: [teacherClassId], references: [id])
+  auditLogs     AuditLog[]
+}
+
+model SchoolSettings {
+  id                    String   @id @default("settings_primary")
+  schoolName            String   @default("FULL OF GRACE PREPARATORY SCHOOL")
+  motto                 String   @default("Excellence, Discipline and Grace")
+  address               String   @default("P.O. Box 123, Accra, Ghana")
+  digitalAddress        String   @default("GA-123-4567")
+  phone                 String   @default("+233 24 000 0000")
+  email                 String   @default("info@fullofgraceprep.edu.gh")
+  website               String   @default("https://fullofgraceprep.edu.gh")
+  logoUrl               String?  @default("/logo.png")
+  idPrefix              String   @default("FOGPS")
+  nextIdNumber          Int      @default(1)
+  receiptPrefix         String   @default("REC")
+  nextReceiptNumber     Int      @default(1)
+  currentAcademicYearId String?
+  currentTermId         String?
+  gradingScheme         String   @default("A1:80-100:Excellent,B2:70-79:Very Good,B3:60-69:Good,C4:55-59:Credit,C5:50-54:Credit,C6:45-49:Pass,D7:40-44:Pass,E8:35-39:Weak Pass,F9:0-34:Fail")
+  updatedAt             DateTime @updatedAt
+}
+
+model AcademicYear {
+  id        String   @id @default(uuid())
+  name      String   @unique // e.g. 2025/2026
+  startDate DateTime?
+  endDate   DateTime?
+  isCurrent Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  terms         Term[]
+  students      Student[]
+  attendances   Attendance[]
+  results       Result[]
+  feeStructures FeeStructure[]
+}
+
+model Term {
+  id             String       @id @default(uuid())
+  name           String       // First Term, Second Term, Third Term
+  academicYearId String
+  academicYear   AcademicYear @relation(fields: [academicYearId], references: [id], onDelete: Cascade)
+  startDate      DateTime?
+  endDate        DateTime?
+  isCurrent      Boolean      @default(false)
+  createdAt      DateTime     @default(now())
+
+  attendances   Attendance[]
+  results       Result[]
+  feeStructures FeeStructure[]
+
+  @@unique([academicYearId, name])
+}
+
+model Class {
+  id          String   @id @default(uuid())
+  name        String   @unique // Nursery 1, Nursery 2, KG 1, KG 2, Primary 1 ... Primary 6, JHS 1 ... JHS 3
+  category    String   @default("Primary") // Nursery, KG, Primary, JHS
+  capacity    Int      @default(40)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  teachers          User[]          @relation("ClassTeacher")
+  students          Student[]       @relation("CurrentClass")
+  admissionStudents Student[]       @relation("AdmissionClass")
+  classSubjects     ClassSubject[]
+  attendances       Attendance[]
+  results           Result[]
+  feeStructures     FeeStructure[]
+}
+
+model Subject {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  code        String   @unique
+  isCore      Boolean  @default(true)
+  description String?
+  createdAt   DateTime @default(now())
+
+  classSubjects ClassSubject[]
+  results       Result[]
+}
+
+model ClassSubject {
+  id        String   @id @default(uuid())
+  classId   String
+  subjectId String
+  class     Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
+  subject   Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+
+  @@unique([classId, subjectId])
+}
+
+model Student {
+  id                     String   @id @default(uuid())
+  studentId              String   @unique // e.g. FOGPS-2026-0001
+  firstName              String
+  middleName             String?
+  lastName               String
+  dateOfBirth            DateTime
+  gender                 String   // Male, Female
+  nationality            String   @default("Ghanaian")
+  religion               String?
+  residentialAddress     String
+  digitalAddress         String?
+  phone                  String?
+  email                  String?
+  previousSchool         String?
+  admissionDate          DateTime @default(now())
+  admissionClassId       String
+  currentClassId         String
+  academicYearId         String?
+  status                 String   @default("ACTIVE") // ACTIVE, INACTIVE, GRADUATED, TRANSFERRED, WITHDRAWN
+  photoUrl               String?
+  house                  String?
+  studentCategory        String?  @default("Day") // Day, Boarding
+  
+  // Medical & Emergency
+  emergencyContactName   String?
+  emergencyContactPhone  String?
+  bloodGroup             String?
+  knownAllergies         String?
+  medicalConditions      String?
+  specialMedicalNotes    String?
+
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  admissionClass         Class         @relation("AdmissionClass", fields: [admissionClassId], references: [id])
+  currentClass           Class         @relation("CurrentClass", fields: [currentClassId], references: [id])
+  academicYear           AcademicYear? @relation(fields: [academicYearId], references: [id])
+  
+  parents                StudentParent[]
+  attendances            Attendance[]
+  results                Result[]
+  payments               FeePayment[]
+  documents              StudentDocument[]
+  history                StudentHistory[]
+  disciplineRecords      DisciplineRecord[]
+
+  @@index([studentId])
+  @@index([currentClassId])
+  @@index([status])
+  @@index([gender])
+}
+
+model ParentGuardian {
+  id                 String   @id @default(uuid())
+  fullName           String
+  relationship       String   // Father, Mother, Guardian, Uncle, Aunt, Other
+  phone              String
+  alternativePhone   String?
+  email              String?
+  occupation         String?
+  residentialAddress String?
+  digitalAddress     String?
+  isEmergencyContact Boolean  @default(false)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  students           StudentParent[]
+}
+
+model StudentParent {
+  id        String         @id @default(uuid())
+  studentId String
+  parentId  String
+  isPrimary Boolean        @default(false)
+  student   Student        @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  parent    ParentGuardian @relation(fields: [parentId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, parentId])
+}
+
+model Attendance {
+  id             String   @id @default(uuid())
+  studentId      String
+  classId        String
+  date           String   // YYYY-MM-DD
+  status         String   @default("PRESENT") // PRESENT, ABSENT, LATE, EXCUSED
+  academicYearId String?
+  termId         String?
+  remarks        String?
+  recordedById   String?
+  createdAt      DateTime @default(now())
+
+  student        Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  class          Class         @relation(fields: [classId], references: [id], onDelete: Cascade)
+  academicYear   AcademicYear? @relation(fields: [academicYearId], references: [id])
+  term           Term?         @relation(fields: [termId], references: [id])
+
+  @@unique([studentId, date])
+  @@index([classId, date])
+}
+
+model Result {
+  id             String        @id @default(uuid())
+  studentId      String
+  classId        String
+  subjectId      String
+  academicYearId String
+  termId         String
+  classScore     Float         @default(0) // out of 30 or 40
+  examScore      Float         @default(0) // out of 70 or 60
+  totalScore     Float         @default(0) // out of 100
+  grade          String?       // A1, B2, etc.
+  remarks        String?       // Excellent, Pass, etc.
+  position       Int?
+  recordedById   String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  student        Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  class          Class         @relation(fields: [classId], references: [id], onDelete: Cascade)
+  subject        Subject       @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  academicYear   AcademicYear  @relation(fields: [academicYearId], references: [id], onDelete: Cascade)
+  term           Term          @relation(fields: [termId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, subjectId, academicYearId, termId])
+  @@index([classId, academicYearId, termId])
+}
+
+model FeeStructure {
+  id             String        @id @default(uuid())
+  name           String        // Tuition, PTA Levy, Exam Fee, Maintenance, Sports
+  classId        String
+  academicYearId String
+  termId         String
+  amount         Float
+  dueDate        DateTime?
+  createdAt      DateTime      @default(now())
+
+  class          Class         @relation(fields: [classId], references: [id], onDelete: Cascade)
+  academicYear   AcademicYear  @relation(fields: [academicYearId], references: [id], onDelete: Cascade)
+  term           Term          @relation(fields: [termId], references: [id], onDelete: Cascade)
+  payments       FeePayment[]
+
+  @@unique([name, classId, academicYearId, termId])
+}
+
+model FeePayment {
+  id             String        @id @default(uuid())
+  receiptNumber  String        @unique // e.g. REC-2026-0001
+  studentId      String
+  feeStructureId String?
+  amountPaid     Float
+  paymentDate    DateTime      @default(now())
+  paymentMethod  String        @default("CASH") // CASH, MOMO, BANK_TRANSFER, CHEQUE
+  reference      String?       // Cheque no., MoMo ref, Bank slip no.
+  description    String?       // Tuition payment, PTA, Full term fee
+  recordedById   String?
+  recordedByName String?
+  createdAt      DateTime      @default(now())
+
+  student        Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  feeStructure   FeeStructure? @relation(fields: [feeStructureId], references: [id])
+
+  @@index([studentId])
+  @@index([paymentDate])
+}
+
+model StudentDocument {
+  id           String   @id @default(uuid())
+  studentId    String
+  title        String
+  documentType String   @default("OTHER") // BIRTH_CERTIFICATE, PREVIOUS_REPORT, ADMISSION_FORM, MEDICAL_RECORD, OTHER
+  fileUrl      String
+  fileSize     String?
+  uploadedAt   DateTime @default(now())
+
+  student      Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([studentId])
+}
+
+model StudentHistory {
+  id          String   @id @default(uuid())
+  studentId   String
+  eventType   String   // ADMISSION, CLASS_PROMOTION, STATUS_CHANGE, RESULT_RECORDED, PAYMENT_RECORDED, PROFILE_UPDATED, DISCIPLINE
+  title       String
+  description String
+  performedBy String?
+  createdAt   DateTime @default(now())
+
+  student     Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([studentId])
+  @@index([createdAt])
+}
+
+model DisciplineRecord {
+  id          String   @id @default(uuid())
+  studentId   String
+  incidentDate DateTime @default(now())
+  title       String
+  description String
+  actionTaken String?
+  recordedBy  String?
+  status      String   @default("Resolved") // Pending, Resolved, Under Review
+  createdAt   DateTime @default(now())
+
+  student     Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([studentId])
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String?
+  userName  String?
+  userRole  String?
+  action    String   // CREATE, UPDATE, DELETE, LOGIN, EXPORT, PRINT
+  module    String   // Students, Classes, Fees, Results, Attendance, Settings, Auth
+  recordId  String?
+  details   String
+  createdAt DateTime @default(now())
+
+  user      User?    @relation(fields: [userId], references: [id])
+
+  @@index([createdAt])
+  @@index([module])
+}
