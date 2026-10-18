@@ -2,6 +2,9 @@
 
 > A complete, professional, and secure School Management & Academic Information System built for **Full of Grace Preparatory School**.
 
+### 🌐 Live Demo Website:
+👉 **[https://8d727660222cc7.lhr.life](https://8d727660222cc7.lhr.life)**
+
 ---
 
 ## 🌟 Key Features
